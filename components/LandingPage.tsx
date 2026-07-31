@@ -201,10 +201,10 @@ export default function LandingPage() {
               </a>
             ))}
             <a
-              href="tel:+375291234567"
+              href="tel:+375296187313"
               className="mt-2 flex items-center justify-center gap-2 bg-[#1d6fc4] text-white py-2.5 rounded-xl text-sm font-700"
             >
-              📞 +375 (29) 123-45-67
+              📞 +375 (29) 618-73-13
             </a>
           </div>
         )}
