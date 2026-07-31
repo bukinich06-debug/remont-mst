@@ -1,0 +1,10 @@
+{
+  "description": "Connects residents of Mstislavl with a trusted appliance repair expert specializing in washing machines and refrigerators through a bright, user-friendly site.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
