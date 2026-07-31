@@ -1,10 +1,10 @@
 node_modules/
+.next/
+out/
 dist/
 build/
 .cache/
 .env*
-.vite/
-vite.config.*.timestamp-*
 *.tsbuildinfo
 *-debug.log*
 logs/

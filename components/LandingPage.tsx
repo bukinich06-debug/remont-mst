@@ -1,4 +1,7 @@
-import { useState } from 'react'
+'use client'
+
+import Image from 'next/image'
+import { useState, type FormEvent } from 'react'
 
 const NAV_LINKS = [
   { label: 'Услуги', href: '#services' },
@@ -114,12 +117,12 @@ function StarRating({ count }: { count: number }) {
   )
 }
 
-export default function App() {
+export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [formData, setFormData] = useState({ name: '', phone: '', message: '' })
   const [sent, setSent] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setSent(true)
     setFormData({ name: '', phone: '', message: '' })
@@ -127,11 +130,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8faff] text-slate-800">
-      {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <a href="#" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#1d6fc4] flex items-center justify-center text-white text-lg font-black" style={{ fontFamily: 'Fraunces, serif' }}>М</div>
+            <div className="w-9 h-9 rounded-xl bg-[#1d6fc4] flex items-center justify-center text-white text-lg font-black font-display">М</div>
             <div>
               <div className="font-extrabold text-slate-800 leading-tight text-sm">МастерСервис</div>
               <div className="text-xs text-slate-500 leading-tight">Мстиславль</div>
@@ -153,7 +155,7 @@ export default function App() {
             +375 (29) 123-45-67
           </a>
 
-          <button className="md:hidden p-2 text-slate-600" onClick={() => setMenuOpen(v => !v)}>
+          <button type="button" className="md:hidden p-2 text-slate-600" onClick={() => setMenuOpen(v => !v)}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               {menuOpen ? <path d="M18 6L6 18M6 6l12 12"/> : <><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></>}
             </svg>
@@ -174,9 +176,7 @@ export default function App() {
         )}
       </header>
 
-      {/* ── Hero ── */}
       <section className="relative overflow-hidden pt-16 pb-20 px-4">
-        {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-blue-100/60 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full bg-sky-100/50 blur-3xl" />
@@ -188,7 +188,7 @@ export default function App() {
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               Работаем в Мстиславле и районе
             </div>
-            <h1 className="text-4xl md:text-5xl font-900 text-slate-800 leading-tight mb-5" style={{ fontFamily: 'Fraunces, serif' }}>
+            <h1 className="text-4xl md:text-5xl font-900 text-slate-800 leading-tight mb-5 font-display">
               Ремонт стиральных машин<br />
               <span className="text-[#1d6fc4]">и холодильников</span>
             </h1>
@@ -215,7 +215,7 @@ export default function App() {
                 { val: '6 мес', label: 'гарантия' },
               ].map(s => (
                 <div key={s.label}>
-                  <div className="text-2xl font-900 text-[#1d6fc4]" style={{ fontFamily: 'Fraunces, serif' }}>{s.val}</div>
+                  <div className="text-2xl font-900 text-[#1d6fc4] font-display">{s.val}</div>
                   <div className="text-xs text-slate-500 font-600">{s.label}</div>
                 </div>
               ))}
@@ -224,15 +224,17 @@ export default function App() {
 
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-100 aspect-[4/3]">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&h=525&fit=crop&auto=format"
                 alt="Мастер по ремонту бытовой техники"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent" />
             </div>
 
-            {/* Floating badge */}
             <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-slate-100">
               <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl">✅</div>
               <div>
@@ -252,7 +254,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Brands ── */}
       <section className="py-8 bg-white border-y border-slate-100">
         <div className="max-w-6xl mx-auto px-4">
           <p className="text-center text-xs font-700 text-slate-400 uppercase tracking-widest mb-5">Ремонтируем технику любых марок</p>
@@ -264,12 +265,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Services ── */}
       <section id="services" className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-xs font-700 text-[#1d6fc4] uppercase tracking-widest mb-3">Услуги</div>
-            <h2 className="text-3xl md:text-4xl font-900 text-slate-800" style={{ fontFamily: 'Fraunces, serif' }}>Что мы ремонтируем</h2>
+            <h2 className="text-3xl md:text-4xl font-900 text-slate-800 font-display">Что мы ремонтируем</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -300,12 +300,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Why us ── */}
       <section id="why" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-xs font-700 text-[#1d6fc4] uppercase tracking-widest mb-3">Преимущества</div>
-            <h2 className="text-3xl md:text-4xl font-900 text-slate-800" style={{ fontFamily: 'Fraunces, serif' }}>Почему выбирают нас</h2>
+            <h2 className="text-3xl md:text-4xl font-900 text-slate-800 font-display">Почему выбирают нас</h2>
             <p className="mt-3 text-slate-500 font-500 max-w-md mx-auto">Мы ценим ваше время и предлагаем честный, качественный сервис.</p>
           </div>
 
@@ -321,12 +320,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Process ── */}
       <section id="process" className="py-20 px-4 bg-[#f8faff]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-xs font-700 text-[#1d6fc4] uppercase tracking-widest mb-3">Как работаем</div>
-            <h2 className="text-3xl md:text-4xl font-900 text-slate-800" style={{ fontFamily: 'Fraunces, serif' }}>Всего 4 шага до рабочей техники</h2>
+            <h2 className="text-3xl md:text-4xl font-900 text-slate-800 font-display">Всего 4 шага до рабочей техники</h2>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -336,7 +334,7 @@ export default function App() {
                   <div className="hidden lg:block absolute top-7 left-full w-full h-px bg-blue-100 z-0" style={{ width: 'calc(100% - 2rem)' }} />
                 )}
                 <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-[#1d6fc4] text-white flex items-center justify-center font-900 text-lg mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+                  <div className="w-14 h-14 rounded-2xl bg-[#1d6fc4] text-white flex items-center justify-center font-900 text-lg mb-4 font-display">
                     {step.num}
                   </div>
                   <h3 className="font-800 text-slate-800 mb-2">{step.title}</h3>
@@ -348,10 +346,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── CTA Banner ── */}
       <section className="py-16 px-4 bg-[#1d6fc4]">
         <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-900 mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+          <h2 className="text-3xl md:text-4xl font-900 mb-4 font-display">
             Техника сломалась? Не ждите!
           </h2>
           <p className="text-blue-100 font-500 mb-8 text-lg">
@@ -368,12 +365,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Reviews ── */}
       <section id="reviews" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-xs font-700 text-[#1d6fc4] uppercase tracking-widest mb-3">Отзывы</div>
-            <h2 className="text-3xl md:text-4xl font-900 text-slate-800" style={{ fontFamily: 'Fraunces, serif' }}>Что говорят клиенты</h2>
+            <h2 className="text-3xl md:text-4xl font-900 text-slate-800 font-display">Что говорят клиенты</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -385,7 +381,7 @@ export default function App() {
                   </div>
                   <StarRating count={r.stars} />
                 </div>
-                <p className="text-sm text-slate-600 font-500 leading-relaxed mb-4">"{r.text}"</p>
+                <p className="text-sm text-slate-600 font-500 leading-relaxed mb-4">&ldquo;{r.text}&rdquo;</p>
                 <div className="flex items-center justify-between">
                   <div className="font-700 text-slate-700 text-sm">{r.name}</div>
                   <div className="text-xs text-slate-400">{r.date}</div>
@@ -396,17 +392,15 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Contact ── */}
       <section id="contact" className="py-20 px-4 bg-[#f8faff]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-xs font-700 text-[#1d6fc4] uppercase tracking-widest mb-3">Контакты</div>
-            <h2 className="text-3xl md:text-4xl font-900 text-slate-800" style={{ fontFamily: 'Fraunces, serif' }}>Свяжитесь с нами</h2>
+            <h2 className="text-3xl md:text-4xl font-900 text-slate-800 font-display">Свяжитесь с нами</h2>
             <p className="mt-3 text-slate-500 font-500 max-w-md mx-auto">Оставьте заявку или позвоните — ответим быстро.</p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-10 items-start">
-            {/* Contact info */}
             <div className="space-y-5">
               {[
                 {
@@ -453,14 +447,13 @@ export default function App() {
               ))}
             </div>
 
-            {/* Form */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
               {sent ? (
                 <div className="flex flex-col items-center justify-center h-full py-8 text-center">
                   <div className="text-5xl mb-4">✅</div>
                   <h3 className="text-xl font-800 text-slate-800 mb-2">Заявка отправлена!</h3>
                   <p className="text-slate-500 font-500 text-sm">Мы свяжемся с вами в ближайшее время.</p>
-                  <button onClick={() => setSent(false)} className="mt-6 text-sm font-700 text-[#1d6fc4] hover:underline">
+                  <button type="button" onClick={() => setSent(false)} className="mt-6 text-sm font-700 text-[#1d6fc4] hover:underline">
                     Отправить ещё одну заявку
                   </button>
                 </div>
@@ -517,13 +510,12 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
       <footer className="bg-slate-800 text-slate-400 py-10 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid sm:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#1d6fc4] flex items-center justify-center text-white font-black text-sm" style={{ fontFamily: 'Fraunces, serif' }}>М</div>
+                <div className="w-8 h-8 rounded-lg bg-[#1d6fc4] flex items-center justify-center text-white font-black text-sm font-display">М</div>
                 <div className="font-800 text-white text-sm">МастерСервис</div>
               </div>
               <p className="text-xs leading-relaxed">Профессиональный ремонт бытовой техники в Мстиславле. Быстро, качественно, с гарантией.</p>
