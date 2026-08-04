@@ -1,10 +1,9 @@
 import { addSubscriber, getSubscribers, removeSubscriber } from "./subscribers";
 
 type TelegramUpdate = {
-  update_id: number;
+  update_id?: number;
   message?: {
     chat?: { id?: number };
-    text?: string;
   };
   my_chat_member?: {
     chat?: { id?: number };
@@ -13,7 +12,7 @@ type TelegramUpdate = {
 };
 
 function getToken(): string | undefined {
-  return process.env.TELEGRAM_BOT_TOKEN;
+  return process.env.TELEGRAM_BOT_TOKEN?.trim() || undefined;
 }
 
 export async function processTelegramUpdate(update: TelegramUpdate): Promise<void> {
@@ -32,7 +31,10 @@ export async function processTelegramUpdate(update: TelegramUpdate): Promise<voi
   }
 }
 
-/** Pull pending getUpdates (local/dev or when webhook is not set) and store chat ids. */
+/**
+ * Local/dev helper when webhook is not set: pull pending getUpdates into Redis.
+ * On Vercel with webhook, Telegram sends updates to /api/telegram/webhook instead.
+ */
 export async function syncSubscribersFromUpdates(): Promise<void> {
   const token = getToken();
   if (!token) return;
@@ -41,7 +43,13 @@ export async function syncSubscribersFromUpdates(): Promise<void> {
     const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?timeout=0`);
     if (!res.ok) return;
 
-    const data = (await res.json()) as { ok?: boolean; result?: TelegramUpdate[] };
+    const data = (await res.json()) as {
+      ok?: boolean;
+      result?: TelegramUpdate[];
+      description?: string;
+    };
+
+    // Active webhook makes getUpdates return 409 — ignore, webhook handles storage.
     if (!data.ok || !Array.isArray(data.result)) return;
 
     let maxId = 0;
@@ -52,7 +60,6 @@ export async function syncSubscribersFromUpdates(): Promise<void> {
       await processTelegramUpdate(update);
     }
 
-    // Confirm so the same updates are not returned forever
     if (maxId > 0) {
       await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${maxId + 1}&timeout=0`);
     }
@@ -85,16 +92,21 @@ export async function broadcastMessage(text: string): Promise<{ sent: number; to
           body: JSON.stringify({ chat_id: chatId, text }),
         });
 
-        if (tgRes.ok) {
+        const data = (await tgRes.json().catch(() => null)) as {
+          ok?: boolean;
+          error_code?: number;
+        } | null;
+
+        if (tgRes.ok && data?.ok) {
           sent += 1;
           return;
         }
 
-        // User blocked the bot or chat no longer valid
-        if (tgRes.status === 403 || tgRes.status === 400) {
+        // User blocked the bot
+        if (data?.error_code === 403) {
           await removeSubscriber(chatId);
         } else {
-          console.error("Telegram sendMessage failed", tgRes.status, chatId);
+          console.error("Telegram sendMessage failed", chatId, data);
         }
       } catch (err) {
         console.error("Telegram sendMessage error", chatId, err);

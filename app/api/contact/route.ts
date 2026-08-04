@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { broadcastMessage } from "@/lib/telegram/bot";
+import { hasSubscriberStore } from "@/lib/telegram/subscribers";
 
 const MAX_NAME = 100;
 const MAX_PHONE = 40;
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Слишком длинные данные" }, { status: 400 });
   }
 
-  if (!process.env.TELEGRAM_BOT_TOKEN) {
-    console.error("Missing TELEGRAM_BOT_TOKEN");
+  if (!process.env.TELEGRAM_BOT_TOKEN?.trim() || !hasSubscriberStore()) {
+    console.error("Missing TELEGRAM_BOT_TOKEN or Upstash Redis credentials");
     return NextResponse.json({ error: "Сервис временно недоступен" }, { status: 500 });
   }
 
@@ -55,9 +56,9 @@ export async function POST(request: Request) {
     const { sent, total } = await broadcastMessage(text);
 
     if (total === 0) {
-      console.error("No Telegram bot subscribers yet");
+      console.error("No Telegram subscribers yet");
       return NextResponse.json(
-        { error: "Нет подписчиков бота. Напишите боту /start." },
+        { error: "Нет подписчиков. Напишите боту /start." },
         { status: 500 },
       );
     }

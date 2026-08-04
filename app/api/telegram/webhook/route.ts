@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { processTelegramUpdate } from "@/lib/telegram/bot";
+import { hasSubscriberStore } from "@/lib/telegram/subscribers";
 
 export async function POST(request: Request) {
+  if (!hasSubscriberStore() || !process.env.TELEGRAM_BOT_TOKEN?.trim()) {
+    return NextResponse.json({ ok: true });
+  }
+
   try {
     const update = await request.json();
     await processTelegramUpdate(update);
   } catch (err) {
     console.error("Telegram webhook error", err);
   }
-  // Always 200 so Telegram does not retry endlessly on bad payloads
+
   return NextResponse.json({ ok: true });
 }

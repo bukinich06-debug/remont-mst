@@ -1,39 +1,50 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
-import path from "path";
+const SUBSCRIBERS_KEY = "telegram:subscribers";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_PATH = path.join(DATA_DIR, "telegram-subscribers.json");
-
-async function ensureStore(): Promise<string[]> {
-  try {
-    const raw = await readFile(STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((id): id is string => typeof id === "string" && id.length > 0);
-  } catch {
-    return [];
-  }
+function getRedisConfig(): { url: string; token: string } | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (!url || !token) return null;
+  return { url: url.replace(/\/$/, ""), token };
 }
 
-async function save(ids: string[]): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  const unique = [...new Set(ids)];
-  await writeFile(STORE_PATH, JSON.stringify(unique, null, 2), "utf8");
+async function redisCommand(command: string[]): Promise<unknown> {
+  const config = getRedisConfig();
+  if (!config) {
+    throw new Error("Missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN");
+  }
+
+  const res = await fetch(config.url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(command),
+  });
+
+  const data = (await res.json()) as { result?: unknown; error?: string };
+
+  if (!res.ok || data.error) {
+    throw new Error(data.error || `Redis error ${res.status}`);
+  }
+
+  return data.result;
+}
+
+export function hasSubscriberStore(): boolean {
+  return getRedisConfig() !== null;
 }
 
 export async function getSubscribers(): Promise<string[]> {
-  return ensureStore();
+  const result = await redisCommand(["SMEMBERS", SUBSCRIBERS_KEY]);
+  if (!Array.isArray(result)) return [];
+  return result.map(String).filter(Boolean);
 }
 
 export async function addSubscriber(chatId: string | number): Promise<void> {
-  const id = String(chatId);
-  const current = await ensureStore();
-  if (current.includes(id)) return;
-  await save([...current, id]);
+  await redisCommand(["SADD", SUBSCRIBERS_KEY, String(chatId)]);
 }
 
 export async function removeSubscriber(chatId: string | number): Promise<void> {
-  const id = String(chatId);
-  const current = await ensureStore();
-  await save(current.filter((x) => x !== id));
+  await redisCommand(["SREM", SUBSCRIBERS_KEY, String(chatId)]);
 }
