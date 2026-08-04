@@ -119,13 +119,42 @@ function StarRating({ count }: { count: number }) {
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", phone: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", phone: "", message: "", website: "" });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setSent(true);
-    setFormData({ name: "", phone: "", message: "" });
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          message: formData.message,
+          website: formData.website,
+        }),
+      });
+
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+
+      if (!res.ok) {
+        setError(data.error || "Не удалось отправить заявку. Попробуйте позже.");
+        return;
+      }
+
+      setSent(true);
+      setFormData({ name: "", phone: "", message: "", website: "" });
+    } catch {
+      setError("Не удалось отправить заявку. Проверьте соединение и попробуйте снова.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -554,7 +583,10 @@ export default function LandingPage() {
                   <p className="text-slate-500 font-500 text-sm">Мы свяжемся с вами в ближайшее время.</p>
                   <button
                     type="button"
-                    onClick={() => setSent(false)}
+                    onClick={() => {
+                      setSent(false);
+                      setError("");
+                    }}
                     className="mt-6 text-sm font-700 text-[#1d6fc4] hover:underline"
                   >
                     Отправить ещё одну заявку
@@ -564,15 +596,32 @@ export default function LandingPage() {
                 <>
                   <h3 className="text-xl font-800 text-slate-800 mb-6">Оставить заявку</h3>
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div
+                      className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+                      aria-hidden="true"
+                    >
+                      <label htmlFor="contact-website">Сайт</label>
+                      <input
+                        id="contact-website"
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={formData.website}
+                        onChange={(e) => setFormData((v) => ({ ...v, website: e.target.value }))}
+                      />
+                    </div>
                     <div>
                       <label className="block text-xs font-700 text-slate-600 mb-1.5">Ваше имя</label>
                       <input
                         type="text"
                         required
+                        disabled={loading}
+                        maxLength={100}
                         placeholder="Иван Иванович"
                         value={formData.name}
                         onChange={(e) => setFormData((v) => ({ ...v, name: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-60"
                       />
                     </div>
                     <div>
@@ -580,27 +629,37 @@ export default function LandingPage() {
                       <input
                         type="tel"
                         required
+                        disabled={loading}
+                        maxLength={40}
                         placeholder="+375 (__)  ___-__-__"
                         value={formData.phone}
                         onChange={(e) => setFormData((v) => ({ ...v, phone: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-60"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-700 text-slate-600 mb-1.5">Опишите проблему</label>
                       <textarea
                         rows={4}
+                        disabled={loading}
+                        maxLength={1000}
                         placeholder="Например: стиральная машина не сливает воду / холодильник не морозит..."
                         value={formData.message}
                         onChange={(e) => setFormData((v) => ({ ...v, message: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-500 text-slate-700 placeholder-slate-300 focus:outline-none focus:border-[#1d6fc4] focus:ring-2 focus:ring-blue-100 transition-all resize-none disabled:opacity-60"
                       />
                     </div>
+                    {error && (
+                      <p className="text-sm text-red-600 font-500 text-center" role="alert">
+                        {error}
+                      </p>
+                    )}
                     <button
                       type="submit"
-                      className="w-full bg-[#1d6fc4] text-white py-3.5 rounded-xl font-700 text-sm hover:bg-[#1659a0] transition-colors shadow-md shadow-blue-200"
+                      disabled={loading}
+                      className="w-full bg-[#1d6fc4] text-white py-3.5 rounded-xl font-700 text-sm hover:bg-[#1659a0] transition-colors shadow-md shadow-blue-200 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Отправить заявку
+                      {loading ? "Отправка..." : "Отправить заявку"}
                     </button>
                     <p className="text-xs text-center text-slate-400 font-500">
                       Нажимая кнопку, вы соглашаетесь на обработку персональных данных

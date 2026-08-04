@@ -5,6 +5,8 @@ dist/
 build/
 .cache/
 .env*
+!.env.example
+data/
 *.tsbuildinfo
 *-debug.log*
 logs/
